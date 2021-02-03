@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 exports.handler = async (context, event, callback) => {
   try {
     const twilioClient = context.getTwilioClient();
@@ -10,13 +12,15 @@ exports.handler = async (context, event, callback) => {
 
 const driver = async (serverlessContext, serverlessEvent, twilioClient) => {
   try {
-    const queues = await twilioClient.queues.list();
-    const seKeys = Object.keys(serverlessEvent);;
-    const queue = seKeys.length > 0 ? queues.find(aQueue => {
+    // Load Asset
+    const storeListPath = Runtime.getAssets()['/stores/list.json'].path;
+    const storeList = JSON.parse(fs.readFileSync(storeListPath, 'utf-8'));
+    const seKeys = Object.keys(serverlessEvent);
+    const store = seKeys.length > 0 ? storeList.find((aStore) => {
       let result = true;
 
       for(const aKey of seKeys) {
-        if(!(serverlessEvent[aKey] === aQueue[aKey])) {
+        if(!(serverlessEvent[aKey] === aStore[aKey])) {
           result = false;
           break;
         }
@@ -25,7 +29,7 @@ const driver = async (serverlessContext, serverlessEvent, twilioClient) => {
       return result;
     }) : null;
 
-    return queue;
+    return store;
   } catch (e) {
     throw e;
   }
