@@ -10,7 +10,16 @@ exports.handler = async (context, event, callback) => {
 
 const driver = async (serverlessContext, serverlessEvent, twilioClient) => {
   try {
-    const queue = await twilioClient.queues.create(serverlessEvent);
+    const queues = await twilioClient.queues.list();
+    const queue = queues.find(aQueue => {
+      let result = true;
+      Object.keys(serverlessEvent).forEach((aKey) => {
+        result = serverlessEvent[aKey] === aQueue[aKey];
+      });
+
+      return result;
+    });
+
     return queue;
   } catch (e) {
     throw e;
