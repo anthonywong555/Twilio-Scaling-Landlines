@@ -1,0 +1,223 @@
+{
+    "description": "A New Flow",
+    "states": [
+      {
+        "name": "Trigger",
+        "type": "trigger",
+        "transitions": [
+          {
+            "event": "incomingMessage"
+          },
+          {
+            "next": "getStoreInfo",
+            "event": "incomingCall"
+          },
+          {
+            "event": "incomingRequest"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      },
+      {
+        "name": "getStoreInfo",
+        "type": "run-function",
+        "transitions": [
+          {
+            "next": "foundStore",
+            "event": "success"
+          },
+          {
+            "event": "fail"
+          }
+        ],
+        "properties": {
+          "service_sid": "ZS2617217ecea5a637e52b42d401e38503",
+          "environment_sid": "ZE889450e322c0510552e3de5778a294c3",
+          "offset": {
+            "x": 50,
+            "y": 240
+          },
+          "function_sid": "ZHc773e59c132c1e82ffeb36d40e9f4b7c",
+          "parameters": [
+            {
+              "value": "{{trigger.call.To}}",
+              "key": "twilioPhoneNumber"
+            }
+          ],
+          "url": "https://serverless-7212-dev.twil.io/stores/find"
+        }
+      },
+      {
+        "name": "foundStore",
+        "type": "split-based-on",
+        "transitions": [
+          {
+            "next": "greetings",
+            "event": "noMatch"
+          },
+          {
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "No Store",
+                "arguments": [
+                  "{{widgets.getStoreInfo.parsed}}"
+                ],
+                "type": "is_blank",
+                "value": "Is Blank"
+              }
+            ]
+          }
+        ],
+        "properties": {
+          "input": "{{widgets.getStoreInfo.parsed}}",
+          "offset": {
+            "x": 0,
+            "y": 510
+          }
+        }
+      },
+      {
+        "name": "greetings",
+        "type": "say-play",
+        "transitions": [
+          {
+            "next": "getQueue",
+            "event": "audioComplete"
+          }
+        ],
+        "properties": {
+          "voice": "alice",
+          "offset": {
+            "x": 25,
+            "y": 762
+          },
+          "loop": 1,
+          "say": "Thank you for calling {{widgets.getStoreInfo.parsed.name}}!",
+          "language": "en-US"
+        }
+      },
+      {
+        "name": "getQueue",
+        "type": "run-function",
+        "transitions": [
+          {
+            "next": "foundQueue",
+            "event": "success"
+          },
+          {
+            "event": "fail"
+          }
+        ],
+        "properties": {
+          "service_sid": "ZS2617217ecea5a637e52b42d401e38503",
+          "environment_sid": "ZE889450e322c0510552e3de5778a294c3",
+          "offset": {
+            "x": 70,
+            "y": 1050
+          },
+          "function_sid": "ZHb5b338ae85f50a060cf1d03283fdcf68",
+          "parameters": [
+            {
+              "value": "{{widgets.getStoreInfo.parsed.queueName}}",
+              "key": "friendlyName"
+            }
+          ],
+          "url": "https://serverless-7212-dev.twil.io/queue/find"
+        }
+      },
+      {
+        "name": "foundQueue",
+        "type": "split-based-on",
+        "transitions": [
+          {
+            "next": "enqueue_1",
+            "event": "noMatch"
+          },
+          {
+            "next": "createQueue",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "No Queue",
+                "arguments": [
+                  "{{widgets.getQueue.parsed}}"
+                ],
+                "type": "is_blank",
+                "value": "Is Blank"
+              }
+            ]
+          }
+        ],
+        "properties": {
+          "input": "{{widgets.getQueue.parsed}}",
+          "offset": {
+            "x": 190,
+            "y": 1290
+          }
+        }
+      },
+      {
+        "name": "createQueue",
+        "type": "run-function",
+        "transitions": [
+          {
+            "next": "getQueue",
+            "event": "success"
+          },
+          {
+            "event": "fail"
+          }
+        ],
+        "properties": {
+          "service_sid": "ZS2617217ecea5a637e52b42d401e38503",
+          "environment_sid": "ZE889450e322c0510552e3de5778a294c3",
+          "offset": {
+            "x": 550,
+            "y": 1520
+          },
+          "function_sid": "ZH3c96ed97e4406018de178ac79f682bd1",
+          "parameters": [
+            {
+              "value": "{{widgets.getStoreInfo.parsed.queueName}}",
+              "key": "friendlyName"
+            }
+          ],
+          "url": "https://serverless-7212-dev.twil.io/queue/create"
+        }
+      },
+      {
+        "name": "enqueue_1",
+        "type": "enqueue-call",
+        "transitions": [
+          {
+            "event": "callComplete"
+          },
+          {
+            "event": "failedToEnqueue"
+          },
+          {
+            "event": "callFailure"
+          }
+        ],
+        "properties": {
+          "queue_name": "{{widgets.getStoreInfo.parsed.queueName}}",
+          "wait_url": "https://serverless-7212-dev.twil.io/queue/holdMusic?ToPhoneNumber={{widgets.getStoreInfo.parsed.landlinePhoneNumber | url_encode}}",
+          "offset": {
+            "x": 50,
+            "y": 1570
+          },
+          "wait_url_method": "POST"
+        }
+      }
+    ],
+    "initial_state": "Trigger",
+    "flags": {
+      "allow_concurrent_calls": true
+    }
+  }
