@@ -1,0 +1,8 @@
+[
+    {
+        "name": "Store A",
+        "twilioPhoneNumber": "<<INSERT PUBLIC PHONE NUMBER>>",
+        "landlinePhoneNumber": "<<INSERT LANDLINE PHONE NUMBER>>",
+        "queueName": "store_a"
+    }
+]
