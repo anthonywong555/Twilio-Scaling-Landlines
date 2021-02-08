@@ -13,7 +13,7 @@ exports.handler = async (context, event, callback) => {
 const driver = async (serverlessContext, serverlessEvent, twilioClient) => {
   try {
     // Load Asset
-    const storeListPath = Runtime.getAssets()['/stores/list.json'].path;
+    const storeListPath = Runtime.getAssets()['/StoreList.json'].path;
     const storeList = JSON.parse(fs.readFileSync(storeListPath, 'utf-8'));
     const seKeys = Object.keys(serverlessEvent);
     const store = seKeys.length > 0 ? storeList.find((aStore) => {
